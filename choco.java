@@ -15,7 +15,6 @@ import org.chocosolver.util.tools.ArrayUtils;
 
 
 
-
 public class Choco {
 	public static boolean contains(final int[] arr, final int key) {
 		for (int i=0 ;i <arr.length ; i++) {
@@ -153,7 +152,7 @@ public class Choco {
 				}
 				predDataSpeed[i][k] = sum;
 			}
-			System.out.println(Arrays.toString(predDataSpeed[i]));
+			//System.out.println(Arrays.toString(predDataSpeed[i]));
 		}
 		
 		
@@ -255,15 +254,14 @@ public class Choco {
 		
 		//define ai,bi,ci,di constraint 
 		for (int i=0 ; i< taskNumber ; i++) {
-			model.arithm(x[i],"=",a[i]);//ai constraint
-			model.arithm(a[i],"+", dummyB[i],"=",b[i]); //bi constraint
+			model.arithm(x[i],"=",a[i]).post();//ai constraint
+			model.arithm(a[i],"+", dummyB[i],"=",b[i]).post(); //bi constraint
 			//TODO : add all dummyB for PREDTASK
-			model.arithm(b[i], "+", dummyC[i],"=",c[i]);//ci constraint
-			model.arithm(c[i], "+", dummyD[i],"=",d[i]);//di constraint
+			model.arithm(b[i], "+", dummyC[i],"=",c[i]).post();//ci constraint
+			model.arithm(c[i], "+", dummyD[i],"=",d[i]).post();//di constraint
 			
 		}
 		//defines constraint schedule
-		System.out.println("Channelling constraint");
 		for (int i = 0; i < taskNumber; i++) {
 			// No preemption: for each pair of tasks i and j such that yi = yj, the two intervals (ai, di) and (aj, dj) cannot have any overlaps.
 			// This can be expressed as a constraint of the form ai + di ≤ aj or aj + dj ≤ ai, depending on which task starts first.
@@ -271,7 +269,13 @@ public class Choco {
 				  BoolVar iBeforej = model.arithm(a[i], "+", d[i], "<=", a[j]).reify();
 				  BoolVar jBeforei = model.arithm(a[j], "+", d[j], "<=", a[i]).reify();
 				  y[i].eq(y[j]).imp(iBeforej.or(jBeforei)).post();
-				  //model.diffN(iBeforej, y[i], a[j], 0, false).post();
+				  /*
+				  model.diffN(
+						  a,
+						  y,
+						  d,
+						  y, true).post();	
+					*/  
 			  }
 		
 			
@@ -303,7 +307,6 @@ public class Choco {
 
 			
 		}
-		System.out.println("ENDPROGRAM");
 
 		// Solution
 		Solver solver = model.getSolver();
@@ -320,7 +323,33 @@ public class Choco {
 						+" di: "+d[i].getValue()
 						);
 		}
-		System.out.println("ENDPROGRAM2");
+		System.out.println("ENDPROGRAM");
 	}
+	/*Example input
+	6
+	1 40 6 2 1 2
+	2 20 6 2 1 2
+	3 96 10 2 1 2
+	4 20 6 2 1 2
+	5 60 0 2 1 2
+	6 20 0 1 1
+	2
+	1 1
+	2 2
+	2
+	1 1 30
+	2 2 17
+	8
+	1 2
+	1 3
+	1 4
+	2 4
+	2 5
+	3 5
+	3 6
+	4 6
+	1
+	1 5
+	 */
 
 }
